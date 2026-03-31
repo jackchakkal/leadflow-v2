@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { use } from 'lucide-react'
+import { useState } from 'react'
+import { Search, Phone, Mail, Users, DollarSign, ChevronLeft, ChevronRight, Plus, X, Star } from 'lucide-react'
 import { Toaster, toast } from 'react-hot-toast'
 
 const CATEGORIES = [
