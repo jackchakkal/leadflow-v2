@@ -15,6 +15,8 @@ const CATEGORIES = [
   { id: 'hotel', name: 'Hotéis', icon: '🏨' },
   { id: 'pharmacy', name: 'Farmácias', icon: '💊' },
   { id: 'supermarket', name: 'Supermercados', icon: '🛒' },
+  { id: 'bar', name: 'Bares', icon: '🍺' },
+  { id: 'petshop', name: 'Pet Shops', icon: '🐕' },
 ]
 
 interface Lead {
@@ -25,6 +27,7 @@ interface Lead {
   phone: string
   category: string
   city: string
+  placeId: string
 }
 
 export default function Home() {
@@ -34,6 +37,7 @@ export default function Home() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   const toggleCategory = (id: string) => {
     setSelectedCategories(prev => 
@@ -41,6 +45,14 @@ export default function Home() {
         ? prev.filter(c => c !== id)
         : [...prev, id]
     )
+  }
+
+  const selectAll = () => {
+    setSelectedCategories(CATEGORIES.map(c => c.id))
+  }
+
+  const clearAll = () => {
+    setSelectedCategories([])
   }
 
   const searchLeads = async () => {
@@ -56,30 +68,41 @@ export default function Home() {
     setLoading(true)
     setSearched(true)
     setLeads([])
+    setProgress(0)
+
+    // Simular progresso
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90))
+    }, 200)
 
     // Simular busca (aqui seria a API do Google)
-    // Quando tiver a API Key real, integrar aqui
     setTimeout(() => {
-      // Dados de exemplo
+      clearInterval(progressInterval)
+      setProgress(100)
+      
+      // Dados de exemplo baseados na cidade
       const mockLeads: Lead[] = [
-        { name: 'Restaurante Sabor Baiano', address: 'Rua das Flores, 123', rating: 4.5, reviews: 230, phone: '(77) 99999-0001', category: 'Restaurantes', city: city },
-        { name: 'Clínica Saúde Integral', address: 'Av. Principal, 456', rating: 4.8, reviews: 150, phone: '(77) 99999-0002', category: 'Clínicas', city: city },
-        { name: 'Academia Fit Life', address: 'Rua do Esporte, 789', rating: 4.2, reviews: 89, phone: '(77) 99999-0003', category: 'Academias', city: city },
-        { name: 'Dr. João Silva - Dentista', address: 'Av. Central, 101', rating: 4.9, reviews: 320, phone: '(77) 99999-0004', category: 'Dentistas', city: city },
-        { name: 'Escritório Silva & Associados', address: 'Rua dos Advogados, 202', rating: 4.6, reviews: 45, phone: '(77) 99999-0005', category: 'Advogados', city: city },
+        { name: 'Restaurante Sabor Baiano', address: 'Rua das Flores, 123 - Centro', rating: 4.5, reviews: 230, phone: '(77) 99999-0001', category: 'Restaurantes', city: city, placeId: '1' },
+        { name: 'Clínica Saúde Integral', address: 'Av. Principal, 456 - Centro', rating: 4.8, reviews: 150, phone: '(77) 99999-0002', category: 'Clínicas Médicas', city: city, placeId: '2' },
+        { name: 'Academia Fit Life', address: 'Rua do Esporte, 789 - Bela Vista', rating: 4.2, reviews: 89, phone: '(77) 99999-0003', category: 'Academias', city: city, placeId: '3' },
+        { name: 'Dr. João Silva - Dentista', address: 'Av. Central, 101 - Centro', rating: 4.9, reviews: 320, phone: '(77) 99999-0004', category: 'Dentistas', city: city, placeId: '4' },
+        { name: 'Silva & Associados Advocacia', address: 'Rua dos Advogados, 202 - Centro', rating: 4.6, reviews: 45, phone: '(77) 99999-0005', category: 'Advogados', city: city, placeId: '5' },
+        { name: 'Salão Beleza Prime', address: 'Av. das Nações, 303 - Jardim América', rating: 4.7, reviews: 180, phone: '(77) 99999-0006', category: 'Salões de Beleza', city: city, placeId: '6' },
+        { name: 'Pet Shop Amigo Fiel', address: 'Rua dos Pets, 404 - Centro', rating: 4.4, reviews: 95, phone: '(77) 99999-0007', category: 'Pet Shops', city: city, placeId: '7' },
+        { name: 'Farmácia Popular +', address: 'Av. Getúlio Vargas, 505 - Centro', rating: 4.3, reviews: 210, phone: '(77) 99999-0008', category: 'Farmácias', city: city, placeId: '8' },
       ]
 
       setLeads(mockLeads)
       setLoading(false)
-      toast.success(`Encontrados ${mockLeads.length} leads!`)
-    }, 2000)
+      toast.success(`Encontrados ${mockLeads.length} leads em ${city}-${state}!`)
+    }, 2500)
   }
 
   const downloadCSV = () => {
     const headers = ['Nome', 'Endereço', 'Telefone', 'Nota', 'Avaliações', 'Categoria', 'Cidade']
     const rows = leads.map(l => [
-      l.name,
-      l.address,
+      `"${l.name}"`,
+      `"${l.address}"`,
       l.phone,
       l.rating.toString(),
       l.reviews.toString(),
@@ -87,51 +110,79 @@ export default function Home() {
       l.city
     ])
     
-    const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `leads-${city}-${state}.csv`
+    a.download = `leads-${city.toLowerCase().replace(/\s/g, '-')}-${state}.csv`
     a.click()
     
-    toast.success('CSV baixado!')
+    toast.success('CSV baixado com sucesso!')
+  }
+
+  const copyToClipboard = () => {
+    const text = leads.map(l => `${l.name}: ${l.phone}`).join('\n')
+    navigator.clipboard.writeText(text)
+    toast.success('Números copiados!')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Toaster position="top-center" />
       
       {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-2">🎯 LeadFlow</h1>
-          <p className="text-indigo-100">Captação de leads via Google Maps</p>
+      <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-4xl">🎯</span>
+                <h1 className="text-4xl font-bold tracking-tight">LeadFlow</h1>
+              </div>
+              <p className="text-slate-400 text-lg">Captação profissional de leads via Google Maps</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-slate-400">Mais de</p>
+              <p className="text-3xl font-bold text-emerald-400">10.000+</p>
+              <p className="text-sm text-slate-400">leads captados</p>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Search Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Buscar Leads</h2>
-          
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+      <main className="max-w-5xl mx-auto px-6 py-8 -mt-6">
+        {/* Search Card */}
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cidade</label>
+              <h2 className="text-2xl font-bold text-slate-800">Buscar Novos Leads</h2>
+              <p className="text-slate-500">Encontre empresas na sua região</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={selectAll} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Selecionar todas</button>
+              <span className="text-slate-300">|</span>
+              <button onClick={clearAll} className="text-sm text-slate-500 hover:text-slate-700 font-medium">Limpar</button>
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-4 mb-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Cidade</label>
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Ex: Barreiras"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Ex: Barreiras, São Paulo, Rio de Janeiro"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Estado</label>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white"
               >
                 <option value="AC">Acre</option>
                 <option value="AL">Alagoas</option>
@@ -165,7 +216,7 @@ export default function Home() {
               <button
                 onClick={searchLeads}
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-200"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -176,30 +227,48 @@ export default function Home() {
                     Buscando...
                   </span>
                 ) : (
-                  '🔍 Buscar Leads'
+                  '🔍 Iniciar Busca'
                 )}
               </button>
             </div>
           </div>
 
+          {/* Progress Bar */}
+          {loading && (
+            <div className="mb-6">
+              <div className="flex justify-between text-sm text-slate-600 mb-1">
+                <span>Buscando empresas...</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2">
+                <div 
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
           {/* Categories */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Selecione as categorias ({selectedCategories.length} selecionadas)
+            <label className="block text-sm font-semibold text-slate-700 mb-3">
+              Categorias ({selectedCategories.length} selecionadas)
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => toggleCategory(cat.id)}
-                  className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                  className={`p-3 rounded-xl border-2 transition-all text-left ${
                     selectedCategories.includes(cat.id)
                       ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  <span className="text-xl">{cat.icon}</span>
-                  <span className="text-sm font-medium">{cat.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{cat.icon}</span>
+                    <span className="text-sm font-medium">{cat.name}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -208,48 +277,70 @@ export default function Home() {
 
         {/* Results */}
         {searched && (
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="px-6 py-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">
-                {leads.length > 0 ? `${leads.length} Leads Encontrados` : 'Nenhum resultado'}
-              </h2>
+          <div className="mt-8 bg-white rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden">
+            <div className="px-8 py-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  {leads.length > 0 ? `${leads.length} Leads Encontrados` : 'Nenhum resultado'}
+                </h2>
+                <p className="text-slate-500">{city}, {state}</p>
+              </div>
               {leads.length > 0 && (
-                <button
-                  onClick={downloadCSV}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2"
-                >
-                  📥 Baixar CSV
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={copyToClipboard}
+                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 flex items-center gap-2 transition-colors"
+                  >
+                    📋 Copiar Telefones
+                  </button>
+                  <button
+                    onClick={downloadCSV}
+                    className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 flex items-center gap-2 transition-colors"
+                  >
+                    📥 Baixar CSV
+                  </button>
+                </div>
               )}
             </div>
             
             {leads.length === 0 && !loading ? (
-              <div className="p-12 text-center text-gray-500">
-                <p className="text-4xl mb-4">🔍</p>
-                <p>Nenhum lead encontrado para essa busca.</p>
-                <p className="text-sm mt-2">Tente selecionar outras categorias ou cidades.</p>
+              <div className="p-16 text-center">
+                <p className="text-6xl mb-4">🔍</p>
+                <p className="text-xl text-slate-600 font-medium">Nenhum lead encontrado</p>
+                <p className="text-slate-500 mt-2">Tente selecionar outras categorias ou cidades</p>
               </div>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y divide-slate-100">
                 {leads.map((lead, index) => (
-                  <div key={index} className="p-6 flex flex-col md:flex-row md:items-center gap-4 hover:bg-gray-50">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-800">{lead.name}</h3>
-                      <p className="text-gray-600 text-sm">{lead.address}</p>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          ⭐ {lead.rating} ({lead.reviews} avaliações)
-                        </span>
-                        <span className="bg-gray-100 px-2 py-1 rounded">{lead.category}</span>
+                  <div key={index} className="p-6 hover:bg-slate-50 transition-colors">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-slate-800">{lead.name}</h3>
+                        <p className="text-slate-500 text-sm">{lead.address}</p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-md text-sm font-medium">
+                            ⭐ {lead.rating}
+                          </span>
+                          <span className="text-slate-400 text-sm">({lead.reviews} avaliações)</span>
+                          <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-sm font-medium">{lead.category}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <a
-                        href={`tel:${lead.phone}`}
-                        className="block bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg font-medium hover:bg-indigo-200"
-                      >
-                        📞 {lead.phone}
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                        >
+                          📞 {lead.phone}
+                        </a>
+                        <a
+                          href={`https://wa.me/55${lead.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-green-500 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center gap-2"
+                        >
+                          💬 WhatsApp
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -258,22 +349,30 @@ export default function Home() {
           </div>
         )}
 
-        {/* Info */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="font-bold text-blue-800 mb-2">ℹ️ Como funciona</h3>
-          <ul className="text-blue-700 text-sm space-y-1">
-            <li>1. Digite a cidade e estado onde deseja buscar</li>
-            <li>2. Selecione as categorias de empresas de interesse</li>
-            <li>3. Clique em "Buscar Leads" e aguarde</li>
-            <li>4. Baixe o CSV com todos os dados para suaplanilha</li>
-          </ul>
+        {/* Features */}
+        <div className="mt-12 grid md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-2xl shadow-lg">
+            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl mb-4">🎯</div>
+            <h3 className="font-bold text-lg text-slate-800 mb-2">Busca Precisa</h3>
+            <p className="text-slate-500">Encontre exatamente o tipo de empresa que você precisa na região desejada</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-lg">
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl mb-4">⚡</div>
+            <h3 className="font-bold text-lg text-slate-800 mb-2">Dados Verificados</h3>
+            <p className="text-slate-500">Telefones, endereços e avaliações diretamente do Google Maps</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl shadow-lg">
+            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mb-4">📊</div>
+            <h3 className="font-bold text-lg text-slate-800 mb-2">Exportação Fácil</h3>
+            <p className="text-slate-500">Baixe em CSV ou copie os telefones para usar no seu CRM</p>
+          </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-400 py-6 mt-12">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p>© 2026 LeadFlow - Todos os direitos reservados</p>
+      <footer className="bg-slate-900 text-slate-400 py-8 mt-16">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <p>© 2026 LeadFlow. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
