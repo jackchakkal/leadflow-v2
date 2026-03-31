@@ -1,58 +1,39 @@
-# LEADFLOW - Sistema de Captação de Leads via Google Maps
+# LeadFlow v2 - Plano de Recriação Completa
 
-## 📋 PLANO DE IMPLEMENTAÇÃO
+## Fase 1: Setup
+- [ ] package.json (Next.js 14, React 18, Tailwind)
+- [ ] next.config.js
+- [ ] tailwind.config.js  
+- [ ] tsconfig.json
+- [ ] .gitignore
 
-### Fase 1: Setup e Configuração
-- [ ] package.json, next.config.js, tailwind.config.js, tsconfig.json
-- [ ] Estrutura de pastas src/app
+## Fase 2: Estrutura Base
+- [ ] src/app/layout.tsx (Inter font, metadata PT-BR)
+- [ ] src/app/globals.css (Tailwind + design system)
+- [ ] src/app/page.tsx (landing page completa)
 
-### Fase 2: Layout Base
-- [ ] layout.tsx com fontes e metadata
-- [ ] globals.css com Tailwind e variáveis globais
-- [ ] Navbar com glass effect
-- [ ] Footer
+## Fase 3: Componentes profissionais
+- [ ] Navbar (glass effect, gradiente, links, botões)
+- [ ] Hero (gradientes, badge, CTA)
+- [ ] Features (6 cards grid, ícones, hover)
+- [ ] Pricing (3 cards, Pro destacado)
+- [ ] Footer (logo, links)
+- [ ] Demo Modal (busca funcional)
 
-### Fase 3: Páginas Principais
-- [ ] Home (Landing page completa)
-- [ ] Busca (Search page)
-- [ ] Dashboard
+## Fase 4: Configuração
+- [ ] README.md completo
+- [ ] .env.example
 
-### Fase 4: Componentes UI
-- [ ] Hero Section com gradientes
-- [ ] Feature Cards com hover effects
-- [ ] Pricing Cards
-- [ ] Modal de Busca/Demo
-- [ ] Lista de Resultados
-
-### Fase 5: Integrações
-- [ ] Google Maps API
-- [ ] Supabase (banco)
-- [ ] Auth
-
-### Fase 6: Deploy
-- [ ] Variáveis de ambiente
-- [ ] Configuração Vercel
-
----
+## Fase 5: Deploy
+- [ ] Git init com author correto
+- [ ] Push para GitHub (usuário reconhecido)
 
 ## DESIGN SYSTEM
-
-### Cores
-- Primary: `#0ea5e9` (cyan-500)
-- Secondary: `#8b5cf6` (purple-500)
-- Dark: `#0f172a` (slate-900)
-- Background: `#f8fafc` (slate-50)
-
-### Tipografia
-- Font: Inter (Google Fonts)
-- Headings: Bold 600-900
-- Body: Regular 400
-
-### Componentes
+- Cores: cyan-500 (#0ea5e9), purple-500 (#8b5cf6), slate-900
+- Fonte: Inter
 - Border radius: 12px (cards), 8px (buttons)
-- Shadows: sm, md, lg, xl
-- Transitions: 200-300ms ease
+- Sombras: shadow-lg, shadow-xl
+- Animações: hover transitions
 
----
-
-## STATUS: 🟡 EM ANDAMENTO
+## PRIORIDADE: MUITO ALTA
+## Status: ⏳ INICIANDO
