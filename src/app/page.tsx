@@ -1,232 +1,279 @@
 'use client'
 
+import { Toaster, toast } from 'react-hot-toast'
 import { useState } from 'react'
 import { 
-  MapPin, 
-  Users, 
-  TrendingUp, 
-  Zap, 
-  Shield, 
-  BarChart3,
-  Menu,
-  X,
-  Check,
-  Star,
-  Play
+  Search, MapPin, Star, Phone, Download, X, Check, Menu, 
+  Kanban, TrendingUp, Users, Bot, ArrowRight, Mail 
 } from 'lucide-react'
 
-export default function LandingPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+const CATEGORIES = [
+  { id: 'restaurant', name: 'Restaurantes' },
+  { id: 'clinic', name: 'Clínicas' },
+  { id: 'dentist', name: 'Dentistas' },
+  { id: 'gym', name: 'Academias' },
+  { id: 'lawyer', name: 'Advogados' },
+  { id: 'beauty', name: 'Beleza' },
+]
 
-  const features = [
-    {
-      icon: MapPin,
-      title: 'Captura Automática',
-      description: 'Extraia leads diretamente do Google Maps com filtros por localização, categoria e avaliação.'
-    },
-    {
-      icon: Users,
-      title: 'Gestão de Contatos',
-      description: 'Organize, categorize e acompanhe todos os seus leads em um só lugar com pipeline visual.'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Automação de Vendas',
-      description: 'Configure sequências de follow-up automáticas e nunca perca uma oportunidade.'
-    },
-    {
-      icon: Zap,
-      title: 'Integração Rápida',
-      description: 'Conecte com seu CRM favorito ou use nossa API robusta para customizações.'
-    },
-    {
-      icon: Shield,
-      title: 'Dados Protegidos',
-      description: 'Segurança enterprise com criptografia, backup automático e conformidade LGPD.'
-    },
-    {
-      icon: BarChart3,
-      title: 'Analytics Avançado',
-      description: 'Métricas em tempo real, relatórios customizados e dashboards interativos.'
-    }
-  ]
+interface Lead {
+  name: string
+  address: string
+  rating: number
+  reviews: number
+  phone: string
+  category: string
+}
 
-  const plans = [
-    {
-      name: 'Starter',
-      price: '97',
-      description: 'Perfeito para autônomos e pequenos negócios',
-      features: [
-        '1.000 leads/mês',
-        '5 categorias',
-        '1 usuário',
-        'E-mail suporte',
-        'Exportação CSV'
-      ],
-      highlight: false
-    },
-    {
-      name: 'Professional',
-      price: '197',
-      description: 'Ideal para equipes de vendas em crescimento',
-      features: [
-        '10.000 leads/mês',
-        'Categorias ilimitadas',
-        '5 usuários',
-        'Suporte优先',
-        'API acesso',
-        'Automação básica'
-      ],
-      highlight: true
-    },
-    {
-      name: 'Enterprise',
-      price: '497',
-      description: 'Para empresas que precisam de escala',
-      features: [
-        'Leads ilimitados',
-        'Usuários ilimitados',
-        'API completa',
-        'Automação avançada',
-        'Consultor dedicado',
-        'SLA garantido'
-      ],
-      highlight: false
-    }
-  ]
+const FEATURES = [
+  { 
+    icon: Search, 
+    title: 'Busca Avançada', 
+    desc: 'Filtre por cidade, raio, categoria e avaliação. Encontre exatamente o que precisa.',
+    color: 'text-cyan-500',
+    bg: 'bg-cyan-50'
+  },
+  { 
+    icon: Kanban, 
+    title: 'Pipeline Kanban', 
+    desc: 'Arraste e solte entre etapas. Visualize o funil completo de vendas.',
+    color: 'text-purple-500',
+    bg: 'bg-purple-50'
+  },
+  { 
+    icon: TrendingUp, 
+    title: 'Controle Total', 
+    desc: 'Acompanhe valor, comissões e receita. Métricas em tempo real.',
+    color: 'text-green-500',
+    bg: 'bg-green-50'
+  },
+  { 
+    icon: Users, 
+    title: 'Gestão de Equipe', 
+    desc: 'Colabore com sua equipe. Permissões avançadas e atribuição de leads.',
+    color: 'text-orange-500',
+    bg: 'bg-orange-50'
+  },
+  { 
+    icon: Download, 
+    title: 'Exportação CSV', 
+    desc: 'Exporte dados ilimitados. Integre com seus sistemas e planilhas.',
+    color: 'text-blue-500',
+    bg: 'bg-blue-50'
+  },
+  { 
+    icon: Bot, 
+    title: 'Automação IA', 
+    desc: 'Automatize tarefas repetitivas. Economize tempo e foque em vender.',
+    color: 'text-pink-500',
+    bg: 'bg-pink-50'
+  },
+]
+
+const PLANS = [
+  { 
+    name: 'Grátis', 
+    price: 'R$ 0', 
+    period: 'para sempre',
+    features: ['100 leads/mês', 'Busca básica', 'Exportar CSV', 'Suporte por email'],
+    cta: 'Começar Grátis',
+    popular: false
+  },
+  { 
+    name: 'Pro', 
+    price: 'R$ 97', 
+    period: 'por mês',
+    features: ['1.000 leads/mês', 'Pipeline completo', 'Equipe (5 usuários)', 'Automação IA', 'Prioridade suporte'],
+    cta: 'Escolher Pro',
+    popular: true
+  },
+  { 
+    name: 'Enterprise', 
+    price: 'R$ 297', 
+    period: 'por mês',
+    features: ['Leads ilimitados', 'API completa', 'Equipe ilimitada', 'Manager dedicado', 'SLA garantido'],
+    cta: 'Falar Consultor',
+    popular: false
+  },
+]
+
+export default function Home() {
+  const [showDemo, setShowDemo] = useState(false)
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('BA')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [leads, setLeads] = useState<Lead[]>([])
+  const [loading, setLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  }
+
+  const searchLeads = () => {
+    if (!city.trim()) { toast.error('Digite a cidade!'); return }
+    if (selectedCategories.length === 0) { toast.error('Selecione categorias!'); return }
+    setLoading(true)
+    setLeads([])
+    setTimeout(() => {
+      const mock = [
+        { name: 'Restaurante Sabor Baiano', address: 'Rua das Flores, 123', rating: 4.5, reviews: 230, phone: '(77) 99999-0001', category: 'Restaurantes' },
+        { name: 'Clínica Saúde Integral', address: 'Av. Principal, 456', rating: 4.8, reviews: 150, phone: '(77) 99999-0002', category: 'Clínicas' },
+        { name: 'Academia FitLife', address: 'Av. São Paulo, 789', rating: 4.3, reviews: 89, phone: '(77) 99999-0003', category: 'Academias' },
+        { name: 'Consultório Dr. Silva', address: 'Rua Nova, 101', rating: 4.9, reviews: 312, phone: '(77) 99999-0004', category: 'Dentistas' },
+      ]
+      setLeads(mock)
+      setLoading(false)
+      toast.success(`${mock.length} leads encontrados!`)
+    }, 2000)
+  }
+
+  const downloadCSV = () => {
+    const csv = ['Nome,Endereço,Telefone,Nota,Avaliações,Categoria', ...leads.map(l => `${l.name},${l.address},${l.phone},${l.rating},${l.reviews},${l.category}`)].join('\n')
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    a.download = `leads-${city.toLowerCase().replace(/\s+/g, '-')}.csv`
+    a.click()
+    toast.success('CSV baixado!')
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 font-sans">
+      <Toaster position="top-center" />
+      
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                <span className="text-white font-bold text-lg">L</span>
               </div>
-              <span className="text-xl font-bold text-slate-900">LeadFlow</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
+                LeadFlow
+              </span>
             </div>
-            
+
+            {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Features</a>
-              <a href="#pricing" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Preços</a>
-              <a href="#testimonials" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Depoimentos</a>
+              <a href="#features" className="text-slate-600 hover:text-cyan-600 font-medium transition-colors">Funcionalidades</a>
+              <a href="#pricing" className="text-slate-600 hover:text-cyan-600 font-medium transition-colors">Planos</a>
+              <a href="#demo" className="text-slate-600 hover:text-cyan-600 font-medium transition-colors">Demo</a>
+            </div>
+
+            {/* Desktop Buttons */}
+            <div className="hidden md:flex items-center gap-3">
+              <button className="text-slate-700 font-medium hover:text-cyan-600 transition-colors px-4 py-2">
+                Entrar
+              </button>
               <button 
-                onClick={() => setIsModalOpen(true)}
-                className="btn-primary text-sm"
+                onClick={() => setShowDemo(true)}
+                className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
               >
-                Ver Demo
+                Começar Grátis
               </button>
             </div>
 
+            {/* Mobile Menu Button */}
             <button 
-              className="md:hidden p-2 text-slate-600"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-slate-100"
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <Menu className="w-6 h-6 text-slate-700" />
             </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-200 px-4 py-4 space-y-4">
-            <a href="#features" className="block text-slate-600 font-medium">Features</a>
-            <a href="#pricing" className="block text-slate-600 font-medium">Preços</a>
-            <a href="#testimonials" className="block text-slate-600 font-medium">Depoimentos</a>
+        {menuOpen && (
+          <div className="md:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-3">
+            <a href="#features" className="block text-slate-700 font-medium py-2">Funcionalidades</a>
+            <a href="#pricing" className="block text-slate-700 font-medium py-2">Planos</a>
+            <a href="#demo" className="block text-slate-700 font-medium py-2">Demo</a>
+            <button className="w-full text-left text-slate-700 font-medium py-2">Entrar</button>
             <button 
-              onClick={() => setIsModalOpen(true)}
-              className="btn-primary text-sm w-full"
+              onClick={() => { setShowDemo(true); setMenuOpen(false) }}
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-5 py-3 rounded-lg font-semibold"
             >
-              Ver Demo
+              Começar Grátis
             </button>
           </div>
         )}
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 relative overflow-hidden">
-        {/* Background Effects */}
+      <section className="pt-32 pb-24 px-4 relative overflow-hidden">
+        {/* Background Gradients */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-300/20 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-300/20 rounded-full blur-[120px]"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-cyan-100/30 to-purple-100/30 rounded-full blur-[150px]"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Animated Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-slate-200 rounded-full px-4 py-2 mb-8 animate-fade-in">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-slate-700">🚀 Agora com IA para qualificação automática</span>
-            </div>
+        <div className="max-w-5xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 border border-white/50 rounded-full mb-8 shadow-lg">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span className="text-sm font-medium text-slate-700">🚀 Integração Google Maps</span>
+          </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
-              Capture leads do{' '}
-              <span className="gradient-text">Google Maps</span>{' '}
-              como nunca
-            </h1>
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+            O Sistema de Captação<br/>
+            <span className="bg-gradient-to-r from-cyan-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              Mais Poderoso do Brasil
+            </span>
+          </h1>
 
-            <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-              A plataforma mais completa para captar, qualificar e converter leads do Google Maps. 
-              Automatize seu funil de vendas e multiplique suas conversões.
-            </p>
+          {/* Subtitle */}
+          <p className="text-lg sm:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Capture leads qualificados do Google Maps, gerencie o ciclo de vendas completo 
+            e multiplique suas conversões com automação inteligente.
+          </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
-              >
-                <Play className="w-5 h-5" />
-                Ver Demonstração
-              </button>
-              <a href="#pricing" className="btn-secondary text-lg px-8 py-4">
-                Começar Grátis
-              </a>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-              {[
-                { value: '50K+', label: 'Leads capturados' },
-                { value: '98%', label: 'Satisfação' },
-                { value: '3x', label: 'Mais conversões' },
-                { value: '24/7', label: 'Suporte' }
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-3xl font-bold text-slate-900">{stat.value}</div>
-                  <div className="text-slate-500 text-sm">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button 
+              onClick={() => setShowDemo(true)}
+              className="group bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-xl hover:shadow-cyan-500/30 transition-all flex items-center gap-2"
+            >
+              Testar Grátis
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <a 
+              href="#features"
+              className="px-8 py-4 rounded-lg font-bold text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all"
+            >
+              Ver Recursos
+            </a>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="features" className="py-24 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-cyan-600 font-semibold text-sm uppercase tracking-wider">Features</span>
-            <h2 className="text-4xl font-bold text-slate-900 mt-2">Tudo que você precisa para vender mais</h2>
-            <p className="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
-              Ferramentas poderosas pensadas para simplificar sua rotina e maximizar resultados.
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Tudo que você precisa para vender mais
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Ferramentas completas para capturar, gerenciar e converter leads em clientes.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
+            {FEATURES.map((feature, i) => (
               <div 
                 key={i} 
-                className="card group"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="group p-6 rounded-2xl border border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-cyan-600" />
+                <div className={`w-12 h-12 ${feature.bg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <feature.icon className={`w-6 h-6 ${feature.color}`} />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">{feature.title}</h3>
-                <p className="text-slate-600">{feature.description}</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{feature.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -234,54 +281,56 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="pricing" className="py-24 px-4 bg-slate-50">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-cyan-600 font-semibold text-sm uppercase tracking-wider">Preços</span>
-            <h2 className="text-4xl font-bold text-slate-900 mt-2">Planos que cabem no seu bolso</h2>
-            <p className="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
-              Escolha o plano ideal para o seu negócio. Todos incluem 7 dias de teste grátis.
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Escolha o plano ideal
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Comece gratuitement e evolua conforme seu negócio cresce.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, i) => (
+          <div className="grid md:grid-cols-3 gap-8 items-start">
+            {PLANS.map((plan, i) => (
               <div 
-                key={i}
-                className={`relative bg-white rounded-2xl p-8 ${
-                  plan.highlight 
-                    ? 'ring-2 ring-cyan-500 shadow-xl scale-105' 
-                    : 'border border-slate-200'
+                key={i} 
+                className={`relative bg-white p-8 rounded-2xl border transition-all duration-300 ${
+                  plan.popular 
+                    ? 'ring-2 ring-cyan-500 shadow-xl shadow-cyan-200/30 scale-105 z-10' 
+                    : 'border-slate-200 hover:shadow-lg'
                 }`}
               >
-                {plan.highlight && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Mais Popular
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-bold rounded-full">
+                    MAIS POPULAR
                   </div>
                 )}
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
-                  <p className="text-slate-500 text-sm mt-1">{plan.description}</p>
+                
+                <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
+                <div className="mt-4 mb-6">
+                  <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
+                  <span className="text-slate-500">/{plan.period}</span>
                 </div>
-                <div className="text-center mb-6">
-                  <span className="text-4xl font-bold text-slate-900">R$</span>
-                  <span className="text-5xl font-bold text-slate-900">{plan.price}</span>
-                  <span className="text-slate-500">/mês</span>
-                </div>
+                
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2 text-slate-600">
+                    <li key={j} className="flex items-center gap-3 text-sm text-slate-600">
                       <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  plan.highlight
-                    ? 'bg-slate-900 text-white hover:bg-slate-800'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}>
-                  Começar Agora
+                
+                <button 
+                  className={`w-full py-3 rounded-lg font-bold transition-all ${
+                    plan.popular 
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-lg hover:shadow-cyan-500/30' 
+                      : 'bg-slate-900 text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {plan.cta}
                 </button>
               </div>
             ))}
@@ -289,187 +338,196 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-cyan-600 font-semibold text-sm uppercase tracking-wider">Depoimentos</span>
-            <h2 className="text-4xl font-bold text-slate-900 mt-2">O que dizem nossos clientes</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Carlos Silva',
-                role: 'Diretor de Vendas',
-                company: 'TechCorp',
-                text: 'O LeadFlow transformou nossa operação. Capturamos 3x mais leads e aumentamos nossa conversão em 150% no primeiro mês.',
-                rating: 5
-              },
-              {
-                name: 'Mariana Oliveira',
-                role: 'Fundadora',
-                company: 'StartUp Brasil',
-                text: 'Incrível como a automação nos economiza tempo. Nossa equipe agora foca em fechar negócios, não em procurar leads.',
-                rating: 5
-              },
-              {
-                name: 'Ricardo Santos',
-                role: 'Gestor Comercial',
-                company: 'Grupo Prime',
-                text: 'Melhor investimento que fizemos. O suporte é excepcional e as funcionalidades superam qualquer concorrente.',
-                rating: 5
-              }
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-slate-50 rounded-2xl p-6">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, j) => (
-                    <Star key={j} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-slate-600 mb-4">"{testimonial.text}"</p>
-                <div>
-                  <div className="font-semibold text-slate-900">{testimonial.name}</div>
-                  <div className="text-sm text-slate-500">{testimonial.role} at {testimonial.company}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-cyan-600 to-purple-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Pronto para transformar suas vendas?
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Comece seu teste grátis de 7 dias agora mesmo. Sem compromisso.
-          </p>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-white text-slate-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-100 transition-all shadow-xl"
-          >
-            Criar Conta Grátis
-          </button>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold">LeadFlow</span>
+      <footer className="bg-slate-900 text-slate-400 py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">L</span>
               </div>
-              <p className="text-slate-400">
-                Capturando leads do Google Maps para impulsionar seu negócio.
-              </p>
+              <span className="text-xl font-bold text-white">LeadFlow</span>
             </div>
 
-            <div>
-              <h4 className="font-semibold mb-4">Produto</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Preços</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
-              </ul>
+            {/* Links */}
+            <div className="flex items-center gap-8">
+              <a href="#features" className="hover:text-cyan-400 transition-colors">Funcionalidades</a>
+              <a href="#pricing" className="hover:text-cyan-400 transition-colors">Planos</a>
+              <a href="#" className="hover:text-cyan-400 transition-colors">Termos</a>
+              <a href="#" className="hover:text-cyan-400 transition-colors">Privacidade</a>
             </div>
 
-            <div>
-              <h4 className="font-semibold mb-4">Empresa</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Sobre</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contato</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacidade</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Termos</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">LGPD</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
-            <p>&copy; 2024 LeadFlow. Todos os direitos reservados.</p>
+            {/* Copyright */}
+            <p className="text-sm">© 2026 LeadFlow. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
 
       {/* Demo Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
-          />
-          <div className="relative bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 z-10"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            
-            <div className="p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Play className="w-6 h-6 text-white ml-1" />
+      {showDemo && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDemo(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Testar Busca de Leads</h2>
+                <p className="text-sm text-slate-500">Demonstração gratuita</p>
+              </div>
+              <button 
+                onClick={() => setShowDemo(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* City & State */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Cidade</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input 
+                      value={city} 
+                      onChange={e => setCity(e.target.value)} 
+                      placeholder="Ex: Barreiras" 
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-900">Demonstração LeadFlow</h3>
-                  <p className="text-slate-500">Veja a plataforma em ação</p>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Estado</label>
+                  <select 
+                    value={state} 
+                    onChange={e => setState(e.target.value)} 
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                  >
+                    <option value="AC">Acre</option>
+                    <option value="AL">Alagoas</option>
+                    <option value="AP">Amapá</option>
+                    <option value="AM">Amazonas</option>
+                    <option value="BA">Bahia</option>
+                    <option value="CE">Ceará</option>
+                    <option value="DF">Distrito Federal</option>
+                    <option value="ES">Espírito Santo</option>
+                    <option value="GO">Goiás</option>
+                    <option value="MA">Maranhão</option>
+                    <option value="MT">Mato Grosso</option>
+                    <option value="MS">Mato Grosso do Sul</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="PA">Pará</option>
+                    <option value="PB">Paraíba</option>
+                    <option value="PR">Paraná</option>
+                    <option value="PE">Pernambuco</option>
+                    <option value="PI">Piauí</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="RN">Rio Grande do Norte</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                    <option value="RO">Rondônia</option>
+                    <option value="RR">Roraima</option>
+                    <option value="SC">Santa Catarina</option>
+                    <option value="SP">São Paulo</option>
+                    <option value="SE">Sergipe</option>
+                    <option value="TO">Tocantins</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="bg-slate-100 rounded-xl aspect-video flex items-center justify-center mb-6">
-                <div className="text-center">
-                  <Play className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                  <p className="text-slate-500">Demo em breve...</p>
+              {/* Categories */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-medium text-slate-700">Categorias</label>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setSelectedCategories(CATEGORIES.map(c => c.id))} 
+                      className="text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                    >
+                      Todas
+                    </button>
+                    <button 
+                      onClick={() => setSelectedCategories([])} 
+                      className="text-sm text-slate-500 hover:text-slate-600"
+                    >
+                      Limpar
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-slate-900 mb-2">O que você verá:</h4>
-                  <ul className="space-y-2 text-slate-600 text-sm">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      Como capturar leads do Maps
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      Gestão de pipeline de vendas
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500" />
-                      Automação de follow-up
-                    </li>
-                  </ul>
-                </div>
-                <div className="bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-lg p-4">
-                  <h4 className="font-semibold text-slate-900 mb-2">Agende uma demo</h4>
-                  <p className="text-slate-600 text-sm mb-4">
-                    Nossa equipe mostra tudo personalmente
-                  </p>
-                  <button className="btn-primary text-sm w-full">
-                    Agendar agora
-                  </button>
+                <div className="grid grid-cols-3 gap-2">
+                  {CATEGORIES.map(cat => (
+                    <button 
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)} 
+                      className={`p-3 rounded-xl text-sm font-medium border transition-all ${
+                        selectedCategories.includes(cat.id) 
+                          ? 'border-cyan-500 bg-cyan-50 text-cyan-700' 
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
+
+            {/* Search Button */}
+            <button 
+              onClick={searchLeads} 
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white py-4 rounded-xl font-bold mt-6 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Buscando...
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  Buscar Leads
+                </>
+              )}
+            </button>
+
+            {/* Results */}
+            {leads.length > 0 && (
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-slate-900">{leads.length} leads encontrados</span>
+                  <button 
+                    onClick={downloadCSV}
+                    className="flex items-center gap-2 text-green-600 font-medium hover:text-green-700 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar CSV
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {leads.map((lead, i) => (
+                    <div key={i} className="p-3 bg-slate-50 rounded-xl flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-slate-900">{lead.name}</div>
+                        <div className="text-xs text-slate-500">{lead.address}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-amber-500">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span className="text-sm font-medium">{lead.rating}</span>
+                        </div>
+                        <a 
+                          href={`tel:${lead.phone}`} 
+                          className="text-cyan-600 text-sm hover:text-cyan-700 flex items-center gap-1"
+                        >
+                          <Phone className="w-3 h-3" />
+                          {lead.phone}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

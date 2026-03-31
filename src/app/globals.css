@@ -2,34 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html { scroll-behavior: smooth; }
-  body {
-    @apply bg-slate-50 text-slate-900;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
+body {
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-slate-900 text-white px-6 py-3 rounded-lg font-semibold 
-           hover:bg-slate-800 transition-all duration-200 shadow-lg;
-  }
-  .btn-secondary {
-    @apply bg-white text-slate-700 px-6 py-3 rounded-lg font-semibold 
-           border border-slate-300 hover:bg-slate-50 transition-all;
-  }
-  .card {
-    @apply bg-white rounded-2xl border border-slate-200 p-6 
-           hover:-translate-y-1 hover:shadow-xl transition-all duration-300;
-  }
-  .gradient-text {
-    @apply bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent;
-  }
-}
-
-@layer utilities {
-  .animation-delay-100 { animation-delay: 100ms; }
-  .animation-delay-200 { animation-delay: 200ms; }
-  .animation-delay-300 { animation-delay: 300ms; }
+.gradient-text {
+  background: linear-gradient(to right, #0891b2, #9333ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
