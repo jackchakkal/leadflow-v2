@@ -74,7 +74,7 @@ export default function LandingPage() {
         '10.000 leads/mês',
         'Categorias ilimitadas',
         '5 usuários',
-        'Suporte优先',
+        'Suporte prioritário',
         'API acesso',
         'Automação básica'
       ],
